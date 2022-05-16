@@ -14,7 +14,7 @@ const isPrime = (number) => {
 let count = 1;
 let primeCount = 0;
 
-const from = Number(process.argv[2]);
+const from = +process.argv[2];
 const to = +process.argv[3];
 
 if (!(isFinite(from) && isFinite(to))) {
