@@ -1,21 +1,30 @@
-const fs = require("fs");
+const http = require("http");
 const path = require("path");
-const readline = require("readline");
+const fs = require("fs");
+const os = require('os');
+const cluster = require('cluster');
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+if (cluster.isMaster) {
+    console.log(`Master ${process.pid} is running...`);
+    for (let i = 0; i < os.cpus().length; i++) {
+        console.log(`Forking process number ${i}`);
+        cluster.fork();
+    }
+} else {
+    console.log(`Worker ${process.pid} is running`);
 
-rl.question("Please enter the path to the file: ", function (inputedPath) {
-  const filePath = path.join(__dirname, inputedPath);
-  
-  fs.readFile(filePath, "utf8", (err, data) => {
-    console.log(data);
-    rl.close();
-  });
-});
+    const server = http.createServer((req, res) => {
+        const filePath = path.join(__dirname, './index.html');
+        const readStream = fs.createReadStream(filePath);
 
-rl.on("close", function () {
-  process.exit(0);
-});
+        setTimeout(() => {
+            console.log(`Worker ${process.pid} handling request`);
+            res.writeHead(200, {
+                'Content-Type': 'text/html',
+            });
+            readStream.pipe(res);
+        }, 5000);
+    });
+
+    server.listen(8085);
+}

@@ -1,18 +1,35 @@
-const fs = require("fs");
-const yargs = require("yargs");
+const http = require("http");
 const path = require("path");
+const fs = require("fs");
 
-const options = yargs
-  .usage("Usage: -p <path>")
-  .option("p", {
-    alias: "path",
-    describe: "Path to file",
-    type: "string",
-    demandOption: true,
-  }).argv;
-  
-const filePath = path.join(__dirname, options.path);
+const server = http.createServer((req, res) => {
+  if (req.method === "GET") {
+    if (req.url === "/user") {
+      res.end("User found!");
+    } else {
+      const filePath = path.join(__dirname, "./index.html");
+      const readStream = fs.createReadStream(filePath);
 
-fs.readFile(filePath, "utf8", (err, data) => {
-  console.log(data);
+      readStream.pipe(res);
+    }
+  } else if (req.method === "POST") {
+    let data = "";
+
+    req.on("data", (chunk) => (data = chunk.toString()));
+    req.on("end", () => {
+      console.log(data);
+      const parsedData = JSON.parse(data);
+      console.log(parsedData);
+
+      res.writeHead(200, "OK", {
+        "Content-Type": "application/json",
+      });
+      res.end(data);
+    });
+  } else {
+    res.writeHead(405, "Method not Allowed");
+    res.end("Method not Allowed");
+  }
 });
+
+server.listen(8085);
