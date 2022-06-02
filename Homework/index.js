@@ -12,14 +12,20 @@ const server = http.createServer((req, res) => {
 
 const io = socket(server);
 
-io.on("connection", (client) => {
-  console.log("Connected");
+io.on("connection", (client, username) => {
+  // Отправляем сообщение при подключении.
+  client.emit('message', 'Connected!');
+  // Сообщаем всем пользователям о подключении нового клиента.
+  client.broadcast.emit('message', 'A new client has connected!');
 
-  client.on("newMessage", (data) => {
-    console.log(data);
+  // Сохраняем полученное имя пользователя в переменной.
+  client.on('little_newbie', (username) => {
+      client.username = username;
+  });
 
-    client.broadcast.emit("newMessage", data);
-    client.emit("newMessage", data);
+  // Полученное сообщение записывается в консоль.
+  client.on('message', (message) => {
+      console.log(client.username + ` reported: ` + {message});
   });
 });
 

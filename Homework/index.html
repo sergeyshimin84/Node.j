@@ -18,7 +18,15 @@
       const messageBlock = document.querySelector("#messages");
       const button = document.querySelector("#button");
       const input = document.querySelector("#input");
-
+      // Посетитель вводит имя пользователя.
+      var username = prompt('What is your name?');
+      // Отправляем в сообщении типа "little_newbie" (чтобы отличать его от "message")
+      socket.emit('little_newbie', username);
+      // Диалоговое окно отображается, когда сервер отправляет нам сообщение типа "message".
+      socket.on('message', (message) => {
+                alert(`A message for you: ` + {message});
+            })
+      // При нажатии кнопки, сообщение отправляется на сервер.
       button.addEventListener("click", () => {
         const data = {
           message: input.value,
